@@ -9,7 +9,7 @@ def batting_table(selected_year = '', selected_team_id = '')
   @batting_table ||= CSV.parse(File.read('Batting.csv'), headers: :first_row).
                       filter{|row| selected_team_id.empty? ? true : row[3] == selected_team_id }.
                       filter{|row| selected_year.empty? ? true : row[1] == selected_year }
-
+end
 
 def all_the_players(selected_year, selected_team_id)
   @all_the_players ||= batting_table(selected_year, selected_team_id).map{|row| row[0] }.uniq
