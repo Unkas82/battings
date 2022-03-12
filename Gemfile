@@ -1,0 +1,2 @@
+gem 'csv'
+gem 'pry'
