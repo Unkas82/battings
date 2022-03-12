@@ -4,11 +4,15 @@ Bundler.require
 class Batting
 
   def run
-    print "Select yearId: "
-    selected_year = gets.chomp
+    print "Input filter by yearId: "
+    selected_year = gets&.chomp
 
-    print "Select teamId: "
-    selected_team_id = gets.chomp
+    print "Input filter by teamId: "
+    selected_team_id = gets&.chomp
+
+    print "Input players count limit: "
+    max_i = gets&.chomp&.to_i
+
 
     puts '+----------+--------+--------------------------------------------------+-----------------+'
     puts '| playerID | yearId | Team name(s)                                     | Batting Average |'
@@ -16,6 +20,7 @@ class Batting
 
     i = 0
     all_the_players(selected_year, selected_team_id).each do |playerID|
+
       player_by_year = batting_table.
                         select{|row| row['playerID'] == playerID }.
                         group_by { |r| r['yearID'] }
@@ -30,9 +35,38 @@ class Batting
         puts "|#{playerID.rjust(10)}|#{yearID.rjust(8)}|#{teamNames.rjust(50)}|#{battingAverage.rjust(17)}|"
       end
 
-      break if i > 2
+      break if max_i.positive? && i > max_i
       i += 1
     end
+  end
+
+############################################################
+  def test
+    headers_b = ['playerID', 'yearID', 'teamID', 'AB', 'H']
+    data_b = [
+      ['p1', '1982', 't1', 5, 1]
+    ]
+
+    csv_rows_b = []
+    data_b.each do |row|
+      csv_row = CSV::Row.new(headers_b, row)
+      csv_rows_b << csv_row
+    end
+    @batting_table = CSV::Table.new(csv_rows_b)
+
+    headers_t = ['yearID', 'teamID', 'name']
+    data_t = [
+      ['1982', 't1', 'Team 1']
+    ]
+
+    csv_rows_t = []
+    data_t.each do |row|
+      csv_row = CSV::Row.new(headers_t, row)
+      csv_rows_t << csv_row
+    end
+    @teams_table = CSV::Table.new(csv_rows_t)
+
+    run
   end
 
   private
@@ -57,12 +91,13 @@ class Batting
   end
 
   def batting_average(rows)
-    # binding.pry
     hits = rows.inject(0){|sum,x| sum + x['H'].to_i }
     at_bats = rows.inject(0){|sum,x| sum + x['AB'].to_i }
+    return 'NaN' if at_bats.zero?
 
-    (hits.to_f / at_bats.to_f).round(3).to_s
+    "%.3f" % (hits.to_f / at_bats.to_f)
   end
 end
 
 Batting.new.run
+# Batting.new.test
